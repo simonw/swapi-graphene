@@ -105,7 +105,10 @@ class Specie(DjangoObjectType):
         return [c.strip() for c in self.skin_colors.split(',')]
 
     def resolve_homeworld(self, *args):
-        return planet_loader.load(self.id)
+        if self.homeworld_id:
+            return planet_loader.load(self.homeworld_id)
+        else:
+            return None
 
     class Meta:
         model = models.Species
