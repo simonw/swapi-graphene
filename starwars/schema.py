@@ -10,6 +10,16 @@ from graphene_django.debug import DjangoDebug
 
 import models
 
+from promise import Promise
+from promise.dataloader import DataLoader
+
+
+class PlanetLoader(DataLoader):
+    def batch_load_fn(self, keys):
+        return Promise.resolve(models.Planet.objects.filter(pk__in=keys))
+
+planet_loader = PlanetLoader()
+
 
 def connection_for_type(_type):
     class Connection(graphene.Connection):
@@ -93,6 +103,9 @@ class Specie(DjangoObjectType):
     @resolve_only_args
     def resolve_skin_colors(self):
         return [c.strip() for c in self.skin_colors.split(',')]
+
+    def resolve_homeworld(self, *args):
+        return planet_loader.load(self.id)
 
     class Meta:
         model = models.Species
