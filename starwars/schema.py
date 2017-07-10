@@ -16,7 +16,14 @@ from promise.dataloader import DataLoader
 
 class PlanetLoader(DataLoader):
     def batch_load_fn(self, keys):
-        return Promise.resolve(models.Planet.objects.filter(pk__in=keys))
+        objects_by_key = {
+            o.pk: o
+            for o in models.Planet.objects.filter(pk__in=keys)
+        }
+        results = []
+        for key in keys:
+            results.append(objects_by_key.get(key, None))
+        return Promise.resolve(results)
 
 planet_loader = PlanetLoader()
 
